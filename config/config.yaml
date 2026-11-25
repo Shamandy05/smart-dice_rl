@@ -1,0 +1,37 @@
+# Central configuration. Nothing algorithmic is hard-coded elsewhere.
+env:
+  max_episode_steps: 200        # truncation limit (configurable)
+  rewards: {goal: 100.0, ladder: 20.0, normal: -1.0, snake: -20.0, invalid: -10.0}
+boards:                          # PDF Section 6 configurations
+  exp1: {size: 30,  snakes: 3, ladders: 3, seed: 11}
+  exp2: {size: 50,  snakes: 5, ladders: 5, seed: 22}
+  exp3: {size: 100, snakes: 8, ladders: 8, seed: 33}
+seeds: [0, 1, 2]                 # independent training seeds
+evaluation:
+  episodes: 200                  # separate evaluation episodes (greedy policy)
+  seed: 12345                    # evaluation env seed (same for every algorithm)
+  interval_episodes: 50          # tabular: evaluate every k training episodes
+  interval_timesteps: 2000       # DRL: evaluate every k timesteps
+  curve_episodes: 3   # greedy eval is deterministic on the core env; few episodes suffice for curves
+convergence:
+  window: 5                      # consecutive evaluation points
+  success_threshold: 0.95        # success rate must be >= threshold ...
+  moves_tolerance: 0.10          # ... and mean moves within 10% of window mean
+tabular:
+  episodes: {exp1: 1500, exp2: 3000, exp3: 6000}
+  alpha: 0.1
+  gamma: 0.99
+  epsilon_start: 1.0
+  epsilon_min: 0.05
+  epsilon_decay: 0.999           # multiplicative per episode (per-board overridable)
+  epsilon_decay_by_board: {exp1: 0.995, exp2: 0.998, exp3: 0.999}
+drl:
+  timesteps: {exp1: 30000, exp2: 60000, exp3: 120000}
+  device: cpu
+  dqn: {learning_rate: 0.001, buffer_size: 50000, learning_starts: 500, batch_size: 64, gamma: 0.99,
+        train_freq: 4, target_update_interval: 500, exploration_fraction: 0.3,
+        exploration_initial_eps: 1.0, exploration_final_eps: 0.05, net_arch: [64, 64]}
+  ppo: {learning_rate: 0.0005, n_steps: 256, batch_size: 64, n_epochs: 10, gamma: 0.99, gae_lambda: 0.95,
+        clip_range: 0.2, ent_coef: 0.01, net_arch: [64, 64]}
+  a2c: {learning_rate: 0.0007, n_steps: 16, gamma: 0.99, gae_lambda: 1.0, ent_coef: 0.01,
+        vf_coef: 0.5, net_arch: [64, 64]}
